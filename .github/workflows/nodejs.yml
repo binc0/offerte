@@ -20,5 +20,7 @@ jobs:
     - name: npm install, build, and test
       run: |
         npm install gulp-cli -g
+        npm install
+        gulp
       env:
         CI: true
