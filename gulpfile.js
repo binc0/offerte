@@ -12,6 +12,8 @@ const concat = require('gulp-concat');
 const download = require('gulp-download-stream');
 const responsive = require('gulp-responsive');
 const merge = require('merge-stream');
+const postcss = require('gulp-postcss');
+const autoprefixer = require('autoprefixer');
 
 const {swagList, swagImages} = require('./get-data');
 
@@ -34,7 +36,7 @@ let manifest = {
 gulp.task('pug', () => {
 	const tags = Array.from(swagList.reduce(
 		(tagList, {tags}) => {
-			tags.forEach(tag => tagList.add(tag));
+			tags.filter(tag => tag !== 'expired').forEach(tag => tagList.add(tag));
 			return tagList;
 		},
 		new Set()
@@ -65,6 +67,9 @@ gulp.task('pug', () => {
 gulp.task('styl', () => {
 	return gulp.src('src/styl/index.styl')
 		.pipe(stylus({compress: true}))
+		.pipe(postcss([
+			autoprefixer()
+		]))
 		.pipe(gulp.dest('dist/assets/css'));
 });
 
@@ -137,6 +142,7 @@ gulp.task('cachebust', cb => {
 	if (!PRODUCTION) {
 		return cb();
 	}
+
 	const basePath = 'dist/assets';
 	const bustedFiles = [
 		'dist/assets/css/*',
@@ -163,6 +169,7 @@ gulp.task('cachebust', cb => {
 						console.warn(`Unable to find image ${fileName} in the manifest`);
 						return;
 					}
+
 					swag.images[extension] = `/assets/${manifest[fileName]}`;
 				});
 			});
